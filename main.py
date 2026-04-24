@@ -108,12 +108,16 @@ def processed_data():
         result = process_records(data)
         return jsonify(result)
     except requests.RequestException:
-        # External endpoint is unreachable or returned an HTTP error
+        # External endpoint is unreachable or returned an HTTP error.
+        # We use a generic message here to avoid leaking internal URLs or
+        # connection details from the exception to the client.
         return jsonify({"error": "Failed to fetch data from external source"}), 502
     except (ValueError, KeyError):
-        # JSON was malformed or missing expected structure
+        # JSON was malformed or missing expected structure.
+        # Same as above -- keep error messages generic so we don't expose
+        # field names or data shapes to the client.
         return jsonify({"error": "Failed to process data"}), 500
-    except Exception as e:
+    except Exception:
         # Catch-all so we never leak a raw stack trace to the client
         return jsonify({"error": "Internal server error"}), 500
 
