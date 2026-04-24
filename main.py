@@ -108,9 +108,14 @@ def processed_data():
         result = process_records(data)
         return jsonify(result)
     except requests.RequestException as e:
+        # External endpoint is unreachable or returned an HTTP error
         return jsonify({"error": f"Failed to fetch data: {e}"}), 502
     except (ValueError, KeyError) as e:
+        # JSON was malformed or missing expected structure
         return jsonify({"error": f"Failed to process data: {e}"}), 500
+    except Exception as e:
+        # Catch-all so we never leak a raw stack trace to the client
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/")
